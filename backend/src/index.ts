@@ -2,21 +2,20 @@ import express from 'express';
 import cors from 'cors';
 import { WebSocketServer } from 'ws';
 import http from 'http';
-import authRoutes from './routes/auth';
-import productRoutes from './routes/products';
-import listingRoutes from './routes/listings';
-import cartRoutes from './routes/cart';
-import orderRoutes from './routes/orders';
-import notificationRoutes from './routes/notifications';
-import aiRoutes from './routes/ai';
-import logisticsRoutes from './routes/logistics';
-import analyticsRoutes from './routes/analytics';
-import savedRoutes from './routes/saved';
-import userRoutes from './routes/users';
+import authRoutes from './routes/auth.js';
+import productRoutes from './routes/products.js';
+import listingRoutes from './routes/listings.js';
+import cartRoutes from './routes/cart.js';
+import orderRoutes from './routes/orders.js';
+import notificationRoutes from './routes/notifications.js';
+import aiRoutes from './routes/ai.js';
+import logisticsRoutes from './routes/logistics.js';
+import analyticsRoutes from './routes/analytics.js';
+import savedRoutes from './routes/saved.js';
+import userRoutes from './routes/users.js';
 
 const app = express();
 const server = http.createServer(app);
-const wss = new WebSocketServer({ server });
 
 app.use(cors({ origin: '*' }));
 app.use(express.json());
@@ -26,9 +25,8 @@ app.get('/', (req, res) => {
   res.json({
     name: 'KrishiSetu API Server',
     status: 'ONLINE',
-    message: 'Backend API is running. Open http://localhost:5173 in your browser to view the KrishiSetu web application.',
+    message: 'Backend API is running. Open the frontend web app to explore the marketplace.',
     version: '1.0.0',
-    documentation: '/api/docs',
     endpoints: [
       '/api/auth/login',
       '/api/auth/register',
@@ -69,13 +67,20 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
   res.status(500).json({ error: 'Internal Server Error', message: err?.message });
 });
 
-wss.on('connection', (ws) => {
-  console.log('WebSocket client connected');
-  ws.on('close', () => console.log('WebSocket client disconnected'));
-});
+// Only bind WebSocket and HTTP listener when running standalone (not inside Vercel serverless handler)
+if (!process.env.VERCEL) {
+  const wss = new WebSocketServer({ server });
+  wss.on('connection', (ws) => {
+    console.log('WebSocket client connected');
+    ws.on('close', () => console.log('WebSocket client disconnected'));
+  });
 
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-  console.log(`🌾 KrishiSetu Backend running on http://localhost:${PORT}`);
-  console.log(`🌐 Frontend Web App available at http://localhost:5173`);
-});
+  const PORT = process.env.PORT || 3000;
+  server.listen(PORT, () => {
+    console.log(`🌾 KrishiSetu Backend running on http://localhost:${PORT}`);
+    console.log(`🌐 Frontend Web App available at http://localhost:5173`);
+  });
+}
+
+export default app;
+export { app, server };
