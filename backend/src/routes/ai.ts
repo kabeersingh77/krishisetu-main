@@ -95,7 +95,7 @@ router.get('/price-history', async (req: any, res: Response) => {
     const base = String(crop).toLowerCase().includes('tomato') ? 38 :
                  String(crop).toLowerCase().includes('chilli') ? 110 :
                  String(crop).toLowerCase().includes('mango') ? 85 : 28;
-    const history = [];
+    const history: { id: string; location: string; price: number; date: string }[] = [];
     for (let i = 30; i >= 0; i--) {
       const d = new Date();
       d.setDate(d.getDate() - i);
