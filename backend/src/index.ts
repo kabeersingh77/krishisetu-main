@@ -77,20 +77,18 @@ app.use(
   },
 );
 
-// Only bind WebSocket and HTTP listener when running standalone (not inside Vercel serverless handler)
-if (!process.env.VERCEL) {
-  const wss = new WebSocketServer({ server });
-  wss.on("connection", (ws) => {
-    console.log("WebSocket client connected");
-    ws.on("close", () => console.log("WebSocket client disconnected"));
-  });
+// WebSocket server (note: connections won't persist across serverless invocations)
+const wss = new WebSocketServer({ server });
+wss.on("connection", (ws) => {
+  console.log("WebSocket client connected");
+  ws.on("close", () => console.log("WebSocket client disconnected"));
+});
 
-  const PORT = process.env.PORT || 3000;
-  server.listen(PORT, () => {
-    console.log(`🌾 Agriflow Backend running on http://localhost:${PORT}`);
-    console.log(`🌐 Frontend Web App available at http://localhost:5173`);
-  });
-}
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+  console.log(`🌾 Agriflow Backend running on http://localhost:${PORT}`);
+  console.log(`🌐 Frontend Web App available at http://localhost:5173`);
+});
 
 export default app;
 export { app, server };
