@@ -12,6 +12,7 @@ import {
   Sparkles,
   AlertCircle,
   Building2,
+  CheckCircle2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -126,6 +127,18 @@ export default function ProductDetail() {
   const fairMin = Math.round(listing.price * 0.94);
   const fairMax = Math.round(listing.price * 1.06);
 
+  let imageUrl: string | null = null;
+  if (listing.images) {
+    try {
+      const parsed = typeof listing.images === 'string' ? JSON.parse(listing.images) : listing.images;
+      if (Array.isArray(parsed) && parsed.length > 0) imageUrl = parsed[0];
+    } catch (e) {
+      if (typeof listing.images === 'string' && listing.images.startsWith('data:image')) {
+        imageUrl = listing.images;
+      }
+    }
+  }
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl space-y-8">
       <Link
@@ -139,23 +152,34 @@ export default function ProductDetail() {
         {/* Left: Image, Seller Profile & Price History */}
         <div className="md:col-span-7 space-y-6">
           <div className="aspect-video bg-gradient-to-br from-emerald-100/50 to-emerald-50 dark:from-emerald-950/40 dark:to-zinc-900 rounded-xl flex items-center justify-center relative overflow-hidden border shadow-sm">
-            <Leaf className="h-28 w-28 text-emerald-600/30" />
-            <div className="absolute top-4 left-4 flex gap-2">
-              <Badge className="bg-emerald-600 text-white font-semibold">
+            {imageUrl ? (
+              <img src={imageUrl} alt={listing.product?.name} className="w-full h-full object-cover" />
+            ) : (
+              <Leaf className="h-28 w-28 text-emerald-600/30" />
+            )}
+            <div className="absolute top-4 left-4 flex flex-wrap gap-2">
+              <Badge className="bg-emerald-600 text-white font-semibold backdrop-blur-xs">
                 Direct from Producer
               </Badge>
               {listing.organic && (
                 <Badge
                   variant="outline"
-                  className="bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300"
+                  className="bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300 backdrop-blur-xs"
                 >
                   Certified Organic
                 </Badge>
               )}
             </div>
-            <Badge className="absolute top-4 right-4 bg-background/90 text-foreground border shadow-sm">
-              {listing.quality}
-            </Badge>
+            <div className="absolute top-4 right-4 flex items-center gap-1.5">
+              <Badge className="bg-background/90 text-foreground border shadow-sm backdrop-blur-xs">
+                {listing.quality}
+              </Badge>
+              {imageUrl && (
+                <Badge className="bg-indigo-600 text-white gap-1 backdrop-blur-xs shadow-sm">
+                  <Sparkles className="h-3 w-3" /> AI Vision Graded
+                </Badge>
+              )}
+            </div>
           </div>
 
           {/* Seller Profile Card */}
@@ -290,8 +314,7 @@ export default function ProductDetail() {
                 AI Fair Market Price: ₹{fairMin} – ₹{fairMax} / {listing.unit}
               </div>
               <p className="text-[11px] text-muted-foreground">
-                Statistical price discovery benchmarked across 90-day regional
-                mandi data.
+                Statistical price discovery benchmarked across 90-day regional mandi data.
               </p>
             </div>
 
@@ -356,15 +379,14 @@ export default function ProductDetail() {
               </div>
               <div className="flex justify-between p-2 rounded bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800">
                 <span className="font-bold text-emerald-800 dark:text-emerald-300">
-                  Agriflow Farm-Direct:
+                  KrishiSetu Farm-Direct:
                 </span>
                 <span className="font-bold text-emerald-600">
                   ₹{listing.price} / {listing.unit}
                 </span>
               </div>
               <p className="text-[10px] text-muted-foreground pt-1 italic">
-                *Simulated price comparison based on typical intermediary
-                markups removed.
+                *Simulated price comparison based on typical intermediary markups removed.
               </p>
             </CardContent>
           </Card>

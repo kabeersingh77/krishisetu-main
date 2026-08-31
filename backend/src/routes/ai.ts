@@ -3,9 +3,26 @@ import { authenticateToken, AuthRequest } from '../middleware/auth.js';
 import { getPriceRecommendation } from '../services/pricingEngine.js';
 import { getDemandForecast } from '../services/demandForecast.js';
 import { getConsumerRecommendations, getFarmerRecommendations } from '../services/recommendationEngine.js';
+import { analyzeProduceImage } from '../services/qualityGradingEngine.js';
 import { prisma } from '../lib/prisma.js';
 
 const router = Router();
+
+// POST /api/ai/grade-produce (Real-time Vision Quality Grading AI)
+router.post('/grade-produce', async (req: any, res: Response) => {
+  try {
+    const { crop, image, organic } = req.body;
+    if (!crop) {
+      return res.status(400).json({ error: 'Crop name is required for grading' });
+    }
+
+    const grading = analyzeProduceImage(crop, image, Boolean(organic));
+    res.json(grading);
+  } catch (error: any) {
+    console.error('Grading error:', error);
+    res.status(500).json({ error: error.message || 'Server error during quality grading' });
+  }
+});
 
 // POST /api/ai/price-recommendation (Public & Authenticated)
 router.post('/price-recommendation', async (req: any, res: Response) => {

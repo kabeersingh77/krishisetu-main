@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { MapPin, ShieldCheck, Leaf, ShoppingCart, Heart, Building2 } from 'lucide-react';
+import { MapPin, ShieldCheck, Leaf, ShoppingCart, Heart, Building2, Sparkles } from 'lucide-react';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -19,6 +19,18 @@ export default function ProductCard({ listing }: { listing: any }) {
   const unit = listing.unit || 'kg';
   const fairMin = Math.round(listing.price * 0.94);
   const fairMax = Math.round(listing.price * 1.06);
+
+  let imageUrl: string | null = null;
+  if (listing.images) {
+    try {
+      const parsed = typeof listing.images === 'string' ? JSON.parse(listing.images) : listing.images;
+      if (Array.isArray(parsed) && parsed.length > 0) imageUrl = parsed[0];
+    } catch (e) {
+      if (typeof listing.images === 'string' && listing.images.startsWith('data:image')) {
+        imageUrl = listing.images;
+      }
+    }
+  }
 
   const handleAdd = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -60,9 +72,18 @@ export default function ProductCard({ listing }: { listing: any }) {
     <Link to={`/marketplace/${listing.id}`}>
       <Card className="overflow-hidden hover:shadow-lg transition-all group flex flex-col h-full border border-border/80 bg-card">
         <div className="aspect-video bg-gradient-to-br from-emerald-50 to-muted/40 dark:from-emerald-950/30 dark:to-zinc-900 flex items-center justify-center relative overflow-hidden">
-          <Leaf className="h-16 w-16 text-emerald-600/30 group-hover:scale-110 transition-transform duration-300" />
-          <div className="absolute top-2 left-2 flex gap-1">
-            <Badge className="bg-background/90 text-foreground border shadow-sm text-[11px]">
+          {imageUrl ? (
+            <img
+              src={imageUrl}
+              alt={cropName}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            />
+          ) : (
+            <Leaf className="h-16 w-16 text-emerald-600/30 group-hover:scale-110 transition-transform duration-300" />
+          )}
+
+          <div className="absolute top-2 left-2 flex flex-wrap gap-1">
+            <Badge className="bg-background/90 text-foreground border shadow-sm text-[11px] backdrop-blur-xs">
               {listing.quality || 'Grade A'}
             </Badge>
             {listing.organic && (
@@ -70,10 +91,15 @@ export default function ProductCard({ listing }: { listing: any }) {
                 Organic
               </Badge>
             )}
+            {imageUrl && (
+              <Badge className="bg-indigo-600/90 text-white text-[10px] gap-0.5 backdrop-blur-xs flex items-center">
+                <Sparkles className="h-2.5 w-2.5" /> AI Verified
+              </Badge>
+            )}
           </div>
           <button
             onClick={handleToggleSave}
-            className="absolute top-2 right-2 p-1.5 rounded-full bg-background/80 hover:bg-background shadow-sm transition-colors text-muted-foreground hover:text-rose-500"
+            className="absolute top-2 right-2 p-1.5 rounded-full bg-background/80 hover:bg-background shadow-sm transition-colors text-muted-foreground hover:text-rose-500 backdrop-blur-xs"
           >
             <Heart className={`h-4 w-4 ${saved ? 'fill-rose-500 text-rose-500' : ''}`} />
           </button>
