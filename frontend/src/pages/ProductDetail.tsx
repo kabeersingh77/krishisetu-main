@@ -1,14 +1,34 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, ShieldCheck, MapPin, Truck, Calendar, ShoppingCart, Leaf, TrendingUp, Sparkles, AlertCircle, Building2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
-import { useCart } from '@/contexts/CartContext';
-import { useToast } from '@/components/ui/use-toast';
-import api from '@/services/api';
+import React, { useState, useEffect } from "react";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import {
+  ArrowLeft,
+  ShieldCheck,
+  MapPin,
+  Truck,
+  Calendar,
+  ShoppingCart,
+  Leaf,
+  TrendingUp,
+  Sparkles,
+  AlertCircle,
+  Building2,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+} from "recharts";
+import { useCart } from "@/contexts/CartContext";
+import { useToast } from "@/components/ui/use-toast";
+import api from "@/services/api";
 
 export default function ProductDetail() {
   const { id } = useParams();
@@ -28,12 +48,18 @@ export default function ProductDetail() {
         const res = await api.get(`/listings/${id}`);
         setListing(res.data);
         if (res.data?.product?.name) {
-          const histRes = await api.get('/ai/price-history', {
-            params: { crop: res.data.product.name, location: res.data.location }
+          const histRes = await api.get("/ai/price-history", {
+            params: {
+              crop: res.data.product.name,
+              location: res.data.location,
+            },
           });
           const formatted = (histRes.data || []).map((p: any) => ({
-            date: new Date(p.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
-            price: p.price
+            date: new Date(p.date).toLocaleDateString(undefined, {
+              month: "short",
+              day: "numeric",
+            }),
+            price: p.price,
           }));
           setPriceHistory(formatted);
         }
@@ -52,14 +78,16 @@ export default function ProductDetail() {
     try {
       await addToCart(listing.id, qty);
       toast({
-        title: 'Added to Cart',
+        title: "Added to Cart",
         description: `${qty} ${listing.unit} of ${listing.product?.name} reserved in your cart.`,
       });
     } catch (e: any) {
       toast({
-        title: 'Could not add to cart',
-        description: e.response?.data?.error || 'Login as a consumer or buyer to purchase.',
-        variant: 'destructive',
+        title: "Could not add to cart",
+        description:
+          e.response?.data?.error ||
+          "Login as a consumer or buyer to purchase.",
+        variant: "destructive",
       });
     } finally {
       setAdding(false);
@@ -68,7 +96,7 @@ export default function ProductDetail() {
 
   const handleBuyNow = async () => {
     await handleAddToCart();
-    navigate('/cart');
+    navigate("/cart");
   };
 
   if (loading) {
@@ -90,13 +118,20 @@ export default function ProductDetail() {
     );
   }
 
-  const sellerName = listing.fpo?.name || listing.farmer?.farmName || listing.farmer?.user?.name || 'Verified Producer';
+  const sellerName =
+    listing.fpo?.name ||
+    listing.farmer?.farmName ||
+    listing.farmer?.user?.name ||
+    "Verified Producer";
   const fairMin = Math.round(listing.price * 0.94);
   const fairMax = Math.round(listing.price * 1.06);
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl space-y-8">
-      <Link to="/marketplace" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground">
+      <Link
+        to="/marketplace"
+        className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
+      >
         <ArrowLeft className="mr-2 h-4 w-4" /> Back to Marketplace
       </Link>
 
@@ -110,7 +145,10 @@ export default function ProductDetail() {
                 Direct from Producer
               </Badge>
               {listing.organic && (
-                <Badge variant="outline" className="bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300">
+                <Badge
+                  variant="outline"
+                  className="bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300"
+                >
                   Certified Organic
                 </Badge>
               )}
@@ -139,17 +177,27 @@ export default function ProductDetail() {
                   </div>
                 </div>
                 <Badge variant="outline" className="text-xs">
-                  {listing.fpo ? 'Farmer Organization (FPO)' : 'Individual Farmer'}
+                  {listing.fpo
+                    ? "Farmer Organization (FPO)"
+                    : "Individual Farmer"}
                 </Badge>
               </div>
               <div className="grid grid-cols-2 gap-4 text-xs pt-3 border-t">
                 <div>
-                  <span className="text-muted-foreground block mb-0.5">Harvest Date</span>
-                  <span className="font-semibold">{new Date(listing.harvestDate).toLocaleDateString()}</span>
+                  <span className="text-muted-foreground block mb-0.5">
+                    Harvest Date
+                  </span>
+                  <span className="font-semibold">
+                    {new Date(listing.harvestDate).toLocaleDateString()}
+                  </span>
                 </div>
                 <div>
-                  <span className="text-muted-foreground block mb-0.5">Available Stock</span>
-                  <span className="font-semibold text-emerald-600">{listing.quantity} {listing.unit}</span>
+                  <span className="text-muted-foreground block mb-0.5">
+                    Available Stock
+                  </span>
+                  <span className="font-semibold text-emerald-600">
+                    {listing.quantity} {listing.unit}
+                  </span>
                 </div>
               </div>
             </CardContent>
@@ -166,12 +214,37 @@ export default function ProductDetail() {
             <CardContent>
               <div className="h-[200px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={priceHistory} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
-                    <XAxis dataKey="date" tickLine={false} axisLine={false} tick={{ fontSize: 10 }} />
-                    <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 10 }} tickFormatter={(v) => `₹${v}`} />
-                    <Tooltip formatter={(val: any) => [`₹${val}/kg`, 'Mandi Price']} />
-                    <Line type="monotone" dataKey="price" stroke="#10b981" strokeWidth={2} dot={false} />
+                  <LineChart
+                    data={priceHistory}
+                    margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                  >
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      vertical={false}
+                      opacity={0.3}
+                    />
+                    <XAxis
+                      dataKey="date"
+                      tickLine={false}
+                      axisLine={false}
+                      tick={{ fontSize: 10 }}
+                    />
+                    <YAxis
+                      tickLine={false}
+                      axisLine={false}
+                      tick={{ fontSize: 10 }}
+                      tickFormatter={(v) => `₹${v}`}
+                    />
+                    <Tooltip
+                      formatter={(val: any) => [`₹${val}/kg`, "Mandi Price"]}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="price"
+                      stroke="#10b981"
+                      strokeWidth={2}
+                      dot={false}
+                    />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
@@ -189,7 +262,8 @@ export default function ProductDetail() {
               {listing.product?.name}
             </h1>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              {listing.description || `Fresh Grade ${listing.quality} ${listing.product?.name} directly from verified growers in ${listing.location}.`}
+              {listing.description ||
+                `Fresh Grade ${listing.quality} ${listing.product?.name} directly from verified growers in ${listing.location}.`}
             </p>
           </div>
 
@@ -197,8 +271,12 @@ export default function ProductDetail() {
           <div className="p-5 bg-muted/30 rounded-xl border space-y-4">
             <div className="flex items-baseline justify-between">
               <div>
-                <span className="text-4xl font-extrabold text-emerald-600">₹{listing.price}</span>
-                <span className="text-muted-foreground text-sm font-normal ml-1">/ {listing.unit}</span>
+                <span className="text-4xl font-extrabold text-emerald-600">
+                  ₹{listing.price}
+                </span>
+                <span className="text-muted-foreground text-sm font-normal ml-1">
+                  / {listing.unit}
+                </span>
               </div>
               <Badge variant="outline" className="bg-background text-xs">
                 In Stock ({listing.quantity} {listing.unit})
@@ -212,20 +290,30 @@ export default function ProductDetail() {
                 AI Fair Market Price: ₹{fairMin} – ₹{fairMax} / {listing.unit}
               </div>
               <p className="text-[11px] text-muted-foreground">
-                Statistical price discovery benchmarked across 90-day regional mandi data.
+                Statistical price discovery benchmarked across 90-day regional
+                mandi data.
               </p>
             </div>
 
             {/* Quantity Selector & Order Buttons */}
             <div className="space-y-3 pt-2">
               <div className="flex items-center gap-3">
-                <span className="text-xs font-semibold text-muted-foreground">Quantity ({listing.unit}):</span>
+                <span className="text-xs font-semibold text-muted-foreground">
+                  Quantity ({listing.unit}):
+                </span>
                 <Input
                   type="number"
                   min={1}
                   max={listing.quantity}
                   value={qty}
-                  onChange={(e) => setQty(Math.max(1, Math.min(listing.quantity, Number(e.target.value))))}
+                  onChange={(e) =>
+                    setQty(
+                      Math.max(
+                        1,
+                        Math.min(listing.quantity, Number(e.target.value)),
+                      ),
+                    )
+                  }
                   className="w-28 h-9"
                 />
               </div>
@@ -253,19 +341,30 @@ export default function ProductDetail() {
           {/* Transparent Supply Chain Comparison */}
           <Card className="border shadow-sm">
             <CardHeader className="pb-2">
-              <CardTitle className="text-xs uppercase font-bold text-muted-foreground">Transparent Supply Chain Markup</CardTitle>
+              <CardTitle className="text-xs uppercase font-bold text-muted-foreground">
+                Transparent Supply Chain Markup
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 text-xs">
               <div className="flex justify-between p-2 rounded bg-muted/20 border">
-                <span className="text-muted-foreground">Traditional Retail Store:</span>
-                <span className="font-semibold text-rose-600">₹{Math.round(listing.price * 1.45)} / {listing.unit}</span>
+                <span className="text-muted-foreground">
+                  Traditional Retail Store:
+                </span>
+                <span className="font-semibold text-rose-600">
+                  ₹{Math.round(listing.price * 1.45)} / {listing.unit}
+                </span>
               </div>
               <div className="flex justify-between p-2 rounded bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800">
-                <span className="font-bold text-emerald-800 dark:text-emerald-300">KrishiSetu Farm-Direct:</span>
-                <span className="font-bold text-emerald-600">₹{listing.price} / {listing.unit}</span>
+                <span className="font-bold text-emerald-800 dark:text-emerald-300">
+                  Agriflow Farm-Direct:
+                </span>
+                <span className="font-bold text-emerald-600">
+                  ₹{listing.price} / {listing.unit}
+                </span>
               </div>
               <p className="text-[10px] text-muted-foreground pt-1 italic">
-                *Simulated price comparison based on typical intermediary markups removed.
+                *Simulated price comparison based on typical intermediary
+                markups removed.
               </p>
             </CardContent>
           </Card>

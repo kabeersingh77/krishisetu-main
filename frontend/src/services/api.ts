@@ -1,11 +1,11 @@
-import axios from 'axios';
+import axios from "axios";
 
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: "/api",
 });
 
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('krishisetu_token');
+  const token = localStorage.getItem("Agriflow_token");
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -16,14 +16,14 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('krishisetu_token');
-      localStorage.removeItem('krishisetu_user');
-      if (window.location.pathname !== '/login') {
-        window.location.href = '/login';
+      localStorage.removeItem("Agriflow_token");
+      localStorage.removeItem("Agriflow_user");
+      if (window.location.pathname !== "/login") {
+        window.location.href = "/login";
       }
     }
     return Promise.reject(error);
-  }
+  },
 );
 
 export default api;

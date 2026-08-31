@@ -1,23 +1,59 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/components/ui/use-toast';
-import { Sparkles, ArrowRight, CheckCircle2, TrendingUp, Info, HelpCircle, AlertCircle } from 'lucide-react';
-import api from '@/services/api';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/components/ui/use-toast";
+import {
+  Sparkles,
+  ArrowRight,
+  CheckCircle2,
+  TrendingUp,
+  Info,
+  HelpCircle,
+  AlertCircle,
+} from "lucide-react";
+import api from "@/services/api";
 
 const CROPS = [
-  'Tomato', 'Potato', 'Onion', 'Wheat', 'Soybean', 'Rice', 'Chilli', 'Cauliflower', 'Cabbage', 'Mango'
+  "Tomato",
+  "Potato",
+  "Onion",
+  "Wheat",
+  "Soybean",
+  "Rice",
+  "Chilli",
+  "Cauliflower",
+  "Cabbage",
+  "Mango",
 ];
 
 const LOCATIONS = [
-  'Indore', 'Dewas', 'Bhopal', 'Ujjain', 'Jabalpur', 'Nagpur', 'Jaipur', 'Delhi'
+  "Indore",
+  "Dewas",
+  "Bhopal",
+  "Ujjain",
+  "Jabalpur",
+  "Nagpur",
+  "Jaipur",
+  "Delhi",
 ];
 
 export default function AddListing() {
@@ -26,14 +62,16 @@ export default function AddListing() {
   const [products, setProducts] = useState<any[]>([]);
 
   // Form State
-  const [crop, setCrop] = useState('Tomato');
+  const [crop, setCrop] = useState("Tomato");
   const [quantity, setQuantity] = useState(250);
-  const [quality, setQuality] = useState('Grade A');
-  const [harvestDate, setHarvestDate] = useState(new Date().toISOString().split('T')[0]);
-  const [location, setLocation] = useState('Indore');
-  const [price, setPrice] = useState<number | ''>('');
+  const [quality, setQuality] = useState("Grade A");
+  const [harvestDate, setHarvestDate] = useState(
+    new Date().toISOString().split("T")[0],
+  );
+  const [location, setLocation] = useState("Indore");
+  const [price, setPrice] = useState<number | "">("");
   const [organic, setOrganic] = useState(false);
-  const [description, setDescription] = useState('');
+  const [description, setDescription] = useState("");
 
   // AI State
   const [loadingAi, setLoadingAi] = useState(false);
@@ -43,7 +81,7 @@ export default function AddListing() {
   useEffect(() => {
     async function loadProducts() {
       try {
-        const res = await api.get('/products');
+        const res = await api.get("/products");
         setProducts(res.data || []);
       } catch (e) {
         console.error(e);
@@ -55,27 +93,29 @@ export default function AddListing() {
   const handleGetAiRecommendation = async () => {
     setLoadingAi(true);
     try {
-      const res = await api.post('/ai/price-recommendation', {
+      const res = await api.post("/ai/price-recommendation", {
         crop,
         quantity: Number(quantity),
         quality,
         location,
-        harvestDate
+        harvestDate,
       });
       setAiRec(res.data);
-      if (price === '') {
+      if (price === "") {
         setPrice(res.data.recommendedPrice);
       }
       toast({
-        title: 'AI Price Engine Calculated',
+        title: "AI Price Engine Calculated",
         description: `Recommended Fair Price: ₹${res.data.recommendedPrice}/kg (Confidence: ${res.data.confidence}%)`,
       });
     } catch (e: any) {
       console.error(e);
       toast({
-        title: 'Price Engine Notice',
-        description: e.response?.data?.error || 'Could not calculate AI price recommendation',
-        variant: 'destructive',
+        title: "Price Engine Notice",
+        description:
+          e.response?.data?.error ||
+          "Could not calculate AI price recommendation",
+        variant: "destructive",
       });
     } finally {
       setLoadingAi(false);
@@ -85,19 +125,29 @@ export default function AddListing() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!price || Number(price) <= 0) {
-      toast({ title: 'Validation Error', description: 'Please enter a valid selling price', variant: 'destructive' });
+      toast({
+        title: "Validation Error",
+        description: "Please enter a valid selling price",
+        variant: "destructive",
+      });
       return;
     }
 
-    const matchedProduct = products.find(p => p.name.toLowerCase() === crop.toLowerCase());
+    const matchedProduct = products.find(
+      (p) => p.name.toLowerCase() === crop.toLowerCase(),
+    );
     if (!matchedProduct) {
-      toast({ title: 'Error', description: 'Product not registered in catalog', variant: 'destructive' });
+      toast({
+        title: "Error",
+        description: "Product not registered in catalog",
+        variant: "destructive",
+      });
       return;
     }
 
     setSubmitting(true);
     try {
-      await api.post('/listings', {
+      await api.post("/listings", {
         productId: matchedProduct.id,
         quantity: Number(quantity),
         price: Number(price),
@@ -105,19 +155,19 @@ export default function AddListing() {
         harvestDate,
         location,
         organic,
-        description
+        description,
       });
       toast({
-        title: 'Listing Published Successfully',
+        title: "Listing Published Successfully",
         description: `${quantity} kg of ${quality} ${crop} is now active on the direct marketplace.`,
       });
-      navigate('/farmer/listings');
+      navigate("/farmer/listings");
     } catch (e: any) {
       console.error(e);
       toast({
-        title: 'Failed to create listing',
-        description: e.response?.data?.error || 'Server error',
-        variant: 'destructive',
+        title: "Failed to create listing",
+        description: e.response?.data?.error || "Server error",
+        variant: "destructive",
       });
     } finally {
       setSubmitting(false);
@@ -127,8 +177,13 @@ export default function AddListing() {
   return (
     <div className="max-w-4xl mx-auto space-y-8">
       <div>
-        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">List Fresh Produce</h1>
-        <p className="text-muted-foreground text-sm">Directly sell to consumers, restaurants, and bulk buyers with AI fair pricing.</p>
+        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
+          List Fresh Produce
+        </h1>
+        <p className="text-muted-foreground text-sm">
+          Directly sell to consumers, restaurants, and bulk buyers with AI fair
+          pricing.
+        </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -149,7 +204,11 @@ export default function AddListing() {
                         <SelectValue placeholder="Select Crop" />
                       </SelectTrigger>
                       <SelectContent>
-                        {CROPS.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                        {CROPS.map((c) => (
+                          <SelectItem key={c} value={c}>
+                            {c}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
@@ -161,9 +220,15 @@ export default function AddListing() {
                         <SelectValue placeholder="Grade" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Grade A">Grade A (Premium / Export)</SelectItem>
-                        <SelectItem value="Grade B">Grade B (Standard Market)</SelectItem>
-                        <SelectItem value="Grade C">Grade C (Processing / Economy)</SelectItem>
+                        <SelectItem value="Grade A">
+                          Grade A (Premium / Export)
+                        </SelectItem>
+                        <SelectItem value="Grade B">
+                          Grade B (Standard Market)
+                        </SelectItem>
+                        <SelectItem value="Grade C">
+                          Grade C (Processing / Economy)
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -188,7 +253,11 @@ export default function AddListing() {
                         <SelectValue placeholder="Location" />
                       </SelectTrigger>
                       <SelectContent>
-                        {LOCATIONS.map(l => <SelectItem key={l} value={l}>{l}</SelectItem>)}
+                        {LOCATIONS.map((l) => (
+                          <SelectItem key={l} value={l}>
+                            {l}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
@@ -214,7 +283,9 @@ export default function AddListing() {
                     className="w-full border-emerald-600/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 gap-2 font-medium"
                   >
                     <Sparkles className="h-4 w-4 text-emerald-600" />
-                    {loadingAi ? 'Analyzing Market Supply & Demand...' : 'Get AI Fair Price Recommendation'}
+                    {loadingAi
+                      ? "Analyzing Market Supply & Demand..."
+                      : "Get AI Fair Price Recommendation"}
                   </Button>
                 </div>
 
@@ -223,7 +294,8 @@ export default function AddListing() {
                     <Label>Your Listing Price (₹ / kg)</Label>
                     {aiRec && (
                       <span className="text-xs text-emerald-600 font-medium">
-                        Suggested: ₹{aiRec.priceRange?.min} - ₹{aiRec.priceRange?.max}
+                        Suggested: ₹{aiRec.priceRange?.min} - ₹
+                        {aiRec.priceRange?.max}
                       </span>
                     )}
                   </div>
@@ -233,14 +305,25 @@ export default function AddListing() {
                     min={1}
                     placeholder="e.g. 45"
                     value={price}
-                    onChange={(e) => setPrice(e.target.value === '' ? '' : Number(e.target.value))}
+                    onChange={(e) =>
+                      setPrice(
+                        e.target.value === "" ? "" : Number(e.target.value),
+                      )
+                    }
                     required
                   />
                 </div>
 
                 <div className="flex items-center space-x-2 pt-2">
-                  <Checkbox id="organic" checked={organic} onCheckedChange={(v) => setOrganic(Boolean(v))} />
-                  <label htmlFor="organic" className="text-sm font-medium leading-none cursor-pointer">
+                  <Checkbox
+                    id="organic"
+                    checked={organic}
+                    onCheckedChange={(v) => setOrganic(Boolean(v))}
+                  />
+                  <label
+                    htmlFor="organic"
+                    className="text-sm font-medium leading-none cursor-pointer"
+                  >
                     Certified Organic Produce (No synthetic pesticides)
                   </label>
                 </div>
@@ -255,8 +338,14 @@ export default function AddListing() {
                   />
                 </div>
 
-                <Button type="submit" disabled={submitting} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold">
-                  {submitting ? 'Publishing...' : 'Publish Listing on Marketplace'}
+                <Button
+                  type="submit"
+                  disabled={submitting}
+                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold"
+                >
+                  {submitting
+                    ? "Publishing..."
+                    : "Publish Listing on Marketplace"}
                 </Button>
               </form>
             </CardContent>
@@ -265,45 +354,68 @@ export default function AddListing() {
 
         {/* AI Explainability Column */}
         <div className="lg:col-span-5 space-y-6">
-          <Card className={`border shadow-sm transition-all ${aiRec ? 'border-emerald-500/50 bg-emerald-50/10' : 'bg-muted/10'}`}>
+          <Card
+            className={`border shadow-sm transition-all ${aiRec ? "border-emerald-500/50 bg-emerald-50/10" : "bg-muted/10"}`}
+          >
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base flex items-center gap-2">
                   <Sparkles className="h-5 w-5 text-emerald-600" />
-                  KrishiSetu AI Price Engine
+                  Agriflow AI Price Engine
                 </CardTitle>
                 {aiRec && (
-                  <Badge variant="outline" className="bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+                  <Badge
+                    variant="outline"
+                    className="bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
+                  >
                     Confidence: {aiRec.confidence}%
                   </Badge>
                 )}
               </div>
-              <CardDescription>Multi-factor statistical supply-demand pricing model</CardDescription>
+              <CardDescription>
+                Multi-factor statistical supply-demand pricing model
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {!aiRec ? (
                 <div className="p-6 text-center text-sm text-muted-foreground border border-dashed rounded-lg">
                   <Info className="h-8 w-8 mx-auto mb-2 text-muted-foreground/60" />
-                  Click <strong>"Get AI Fair Price Recommendation"</strong> to calculate optimal market value based on 90-day mandi prices, local supply ratio, and seasonal trends.
+                  Click <strong>"Get AI Fair Price Recommendation"</strong> to
+                  calculate optimal market value based on 90-day mandi prices,
+                  local supply ratio, and seasonal trends.
                 </div>
               ) : (
                 <div className="space-y-4">
                   {/* Recommended Price Box */}
                   <div className="p-4 rounded-lg bg-emerald-100/50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-center">
-                    <div className="text-xs uppercase font-bold text-emerald-800 dark:text-emerald-300">AI Recommended Price</div>
+                    <div className="text-xs uppercase font-bold text-emerald-800 dark:text-emerald-300">
+                      AI Recommended Price
+                    </div>
                     <div className="text-3xl font-extrabold text-emerald-700 dark:text-emerald-400 my-1">
-                      ₹{aiRec.recommendedPrice} <span className="text-sm font-normal text-muted-foreground">/ kg</span>
+                      ₹{aiRec.recommendedPrice}{" "}
+                      <span className="text-sm font-normal text-muted-foreground">
+                        / kg
+                      </span>
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      Fair Range: ₹{aiRec.priceRange?.min} – ₹{aiRec.priceRange?.max}
+                      Fair Range: ₹{aiRec.priceRange?.min} – ₹
+                      {aiRec.priceRange?.max}
                     </div>
                     <div className="mt-2 flex items-center justify-center gap-2">
-                      <span className="text-xs font-semibold">Demand Velocity:</span>
-                      <Badge className={
-                        aiRec.demandLevel === 'VERY_HIGH' ? 'bg-red-500' :
-                        aiRec.demandLevel === 'HIGH' ? 'bg-emerald-600' :
-                        aiRec.demandLevel === 'MEDIUM' ? 'bg-amber-500' : 'bg-slate-500'
-                      }>
+                      <span className="text-xs font-semibold">
+                        Demand Velocity:
+                      </span>
+                      <Badge
+                        className={
+                          aiRec.demandLevel === "VERY_HIGH"
+                            ? "bg-red-500"
+                            : aiRec.demandLevel === "HIGH"
+                              ? "bg-emerald-600"
+                              : aiRec.demandLevel === "MEDIUM"
+                                ? "bg-amber-500"
+                                : "bg-slate-500"
+                        }
+                      >
                         {aiRec.demandLevel}
                       </Badge>
                     </div>
@@ -311,14 +423,25 @@ export default function AddListing() {
 
                   {/* Explainability Breakdown */}
                   <div>
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Why this price?</h4>
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">
+                      Why this price?
+                    </h4>
                     <div className="space-y-2">
                       {aiRec.factors?.map((f: any, idx: number) => (
-                        <div key={idx} className="flex items-center justify-between text-xs p-2 rounded bg-background border">
-                          <span className="font-medium text-foreground">{f.name}</span>
+                        <div
+                          key={idx}
+                          className="flex items-center justify-between text-xs p-2 rounded bg-background border"
+                        >
+                          <span className="font-medium text-foreground">
+                            {f.name}
+                          </span>
                           <div className="flex items-center gap-2">
-                            <span className="text-muted-foreground text-[11px]">{f.value}</span>
-                            <span className={`font-semibold ${f.direction === 'up' ? 'text-emerald-600' : f.direction === 'down' ? 'text-rose-600' : 'text-slate-600'}`}>
+                            <span className="text-muted-foreground text-[11px]">
+                              {f.value}
+                            </span>
+                            <span
+                              className={`font-semibold ${f.direction === "up" ? "text-emerald-600" : f.direction === "down" ? "text-rose-600" : "text-slate-600"}`}
+                            >
                               {f.impact}
                             </span>
                           </div>

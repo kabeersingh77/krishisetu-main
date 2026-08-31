@@ -1,11 +1,11 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import api from '@/services/api';
+import React, { createContext, useContext, useState, useEffect } from "react";
+import api from "@/services/api";
 
 interface User {
   id: string;
   name: string;
   email: string;
-  role: 'FARMER' | 'CONSUMER' | 'BULK_BUYER' | 'FPO' | 'LOGISTICS' | 'ADMIN';
+  role: "FARMER" | "CONSUMER" | "BULK_BUYER" | "FPO" | "LOGISTICS" | "ADMIN";
   verified: boolean;
 }
 
@@ -22,7 +22,9 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(localStorage.getItem('krishisetu_token'));
+  const [token, setToken] = useState<string | null>(
+    localStorage.getItem("Agriflow_token"),
+  );
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -31,7 +33,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         try {
           // In a real app we'd validate the token with /api/auth/me
           // For demo, we decode or use stored user data
-          const storedUser = localStorage.getItem('krishisetu_user');
+          const storedUser = localStorage.getItem("Agriflow_user");
           if (storedUser) {
             setUser(JSON.parse(storedUser));
           }
@@ -47,19 +49,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = (newToken: string, newUser: User) => {
     setToken(newToken);
     setUser(newUser);
-    localStorage.setItem('krishisetu_token', newToken);
-    localStorage.setItem('krishisetu_user', JSON.stringify(newUser));
+    localStorage.setItem("Agriflow_token", newToken);
+    localStorage.setItem("Agriflow_user", JSON.stringify(newUser));
   };
 
   const logout = () => {
     setToken(null);
     setUser(null);
-    localStorage.removeItem('krishisetu_token');
-    localStorage.removeItem('krishisetu_user');
+    localStorage.removeItem("Agriflow_token");
+    localStorage.removeItem("Agriflow_user");
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, isAuthenticated: !!user, isLoading, login, logout }}>
+    <AuthContext.Provider
+      value={{ user, token, isAuthenticated: !!user, isLoading, login, logout }}
+    >
       {children}
     </AuthContext.Provider>
   );
@@ -68,7 +72,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 }
