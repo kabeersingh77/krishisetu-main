@@ -1,0 +1,257 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         String   // FARMER, FPO, CONSUMER, BULK_BUYER, LOGISTICS, ADMIN
+  phone        String?
+  location     String?
+  avatar       String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  farmerProfile    FarmerProfile?
+  fpo              FPO?
+  orders           Order[]
+  cart             Cart?
+  notifications    Notification[]
+  savedProducts    SavedProduct[]
+}
+
+model FarmerProfile {
+  id                 String   @id @default(cuid())
+  userId             String   @unique
+  farmName           String
+  farmSize           String?
+  farmLocation       String
+  lat                Float
+  lng                Float
+  verified           Boolean  @default(false)
+  certifications     String?  // JSON string array
+  createdAt          DateTime @default(now())
+
+  user               User     @relation(fields: [userId], references: [id])
+  listings           ProductListing[]
+}
+
+model FPO {
+  id                 String   @id @default(cuid())
+  userId             String   @unique
+  name               String
+  location           String
+  lat                Float
+  lng                Float
+  memberCount        Int      @default(0)
+  verified           Boolean  @default(false)
+  description        String?
+  createdAt          DateTime @default(now())
+
+  user               User     @relation(fields: [userId], references: [id])
+  listings           ProductListing[]
+}
+
+model Product {
+  id          String   @id @default(cuid())
+  name        String
+  category    String   // Vegetable, Grain, Fruit, Spice
+  variety     String?
+  image       String?
+  unit        String   @default("kg")
+  createdAt   DateTime @default(now())
+
+  listings    ProductListing[]
+  marketPrices MarketPrice[]
+  demandForecasts DemandForecast[]
+}
+
+model ProductListing {
+  id            String   @id @default(cuid())
+  farmerId      String?
+  fpoId         String?
+  productId     String
+  quantity      Float
+  originalQty   Float
+  unit          String   @default("kg")
+  price         Float
+  quality       String   // Grade A, Grade B, Grade C
+  harvestDate   DateTime
+  location      String
+  lat           Float
+  lng           Float
+  organic       Boolean  @default(false)
+  description   String?
+  images        String?  // JSON string array
+  status        String   @default("ACTIVE") // ACTIVE, PAUSED, SOLD_OUT, EXPIRED
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  farmer        FarmerProfile? @relation(fields: [farmerId], references: [id])
+  fpo           FPO?           @relation(fields: [fpoId], references: [id])
+  product       Product        @relation(fields: [productId], references: [id])
+  orderItems    OrderItem[]
+  cartItems     CartItem[]
+  priceRecs     PriceRecommendation[]
+  savedBy       SavedProduct[]
+}
+
+model Order {
+  id              String   @id @default(cuid())
+  buyerId         String
+  total           Float
+  status          String   @default("PENDING") // PENDING, CONFIRMED, PROCESSING, SHIPPED, DELIVERED, CANCELLED
+  shippingAddress String?
+  shippingCity    String?
+  shippingState   String?
+  shippingPin     String?
+  paymentMethod   String   @default("DEMO")
+  paymentStatus   String   @default("COMPLETED")
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  buyer           User     @relation(fields: [buyerId], references: [id])
+  items           OrderItem[]
+  delivery        Delivery?
+}
+
+model OrderItem {
+  id        String   @id @default(cuid())
+  orderId   String
+  listingId String
+  quantity  Float
+  price     Float
+
+  order     Order          @relation(fields: [orderId], references: [id])
+  listing   ProductListing @relation(fields: [listingId], references: [id])
+}
+
+model Delivery {
+  id            String   @id @default(cuid())
+  orderId       String   @unique
+  origin        String
+  originLat     Float
+  originLng     Float
+  destination   String
+  destLat       Float
+  destLng       Float
+  driver        String?
+  vehicle       String?
+  vehicleType   String?
+  status        String   @default("PENDING") // PENDING, ASSIGNED, PICKED_UP, IN_TRANSIT, DELIVERED
+  eta           DateTime?
+  distance      Float?   // km
+  duration      Float?   // minutes
+  completedAt   DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  order         Order    @relation(fields: [orderId], references: [id])
+}
+
+model MarketPrice {
+  id        String   @id @default(cuid())
+  productId String
+  location  String
+  price     Float    // per kg in INR
+  date      DateTime
+  source    String   @default("PLATFORM")
+
+  product   Product  @relation(fields: [productId], references: [id])
+
+  @@index([productId, location, date])
+}
+
+model DemandForecast {
+  id              String   @id @default(cuid())
+  productId       String
+  location        String
+  forecastDate    DateTime
+  period          Int      @default(7) // days
+  predictedDemand Float
+  actualDemand    Float?
+  confidence      Float
+  factors         String?  // JSON
+  createdAt       DateTime @default(now())
+
+  product         Product  @relation(fields: [productId], references: [id])
+
+  @@index([productId, location])
+}
+
+model PriceRecommendation {
+  id               String   @id @default(cuid())
+  listingId        String?
+  productId        String?
+  crop             String
+  location         String
+  quantity         Float
+  quality          String
+  recommendedPrice Float
+  priceRange       String   // JSON {min, max}
+  confidence       Float
+  demandLevel      String   // LOW, MEDIUM, HIGH, VERY_HIGH
+  factors          String   // JSON array
+  explanation      String
+  createdAt        DateTime @default(now())
+
+  listing          ProductListing? @relation(fields: [listingId], references: [id])
+}
+
+model Cart {
+  id        String     @id @default(cuid())
+  userId    String     @unique
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  user      User       @relation(fields: [userId], references: [id])
+  items     CartItem[]
+}
+
+model CartItem {
+  id        String   @id @default(cuid())
+  cartId    String
+  listingId String
+  quantity  Float
+  createdAt DateTime @default(now())
+
+  cart      Cart           @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  listing   ProductListing @relation(fields: [listingId], references: [id])
+
+  @@unique([cartId, listingId])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  message   String
+  type      String   @default("INFO") // INFO, ORDER, DELIVERY, PRICE, DEMAND, SYSTEM
+  read      Boolean  @default(false)
+  link      String?
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@index([userId, read])
+}
+
+model SavedProduct {
+  id        String   @id @default(cuid())
+  userId    String
+  listingId String
+  createdAt DateTime @default(now())
+
+  user      User           @relation(fields: [userId], references: [id])
+  listing   ProductListing @relation(fields: [listingId], references: [id])
+
+  @@unique([userId, listingId])
+}

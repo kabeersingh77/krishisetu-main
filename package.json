@@ -1,0 +1,12 @@
+{
+  "name": "krishisetu",
+  "version": "1.0.0",
+  "description": "AI-Powered Direct Agricultural Marketplace",
+  "scripts": {
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "build:frontend": "cd frontend && npm run build",
+    "db:seed": "cd backend && npx tsx prisma/seed.ts",
+    "db:push": "cd backend && npx prisma db push"
+  }
+}
