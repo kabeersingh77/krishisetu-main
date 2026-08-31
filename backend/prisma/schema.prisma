@@ -3,8 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("postgresql://agriflowdb_owner:npg_jKzIdZJOn19v@ep-mute-field-aelmakr7-pooler.c-2.us-east-2.aws.neon.tech/agriflowdb?sslmode=require&channel_binding=require")
 }
 
 model User {
